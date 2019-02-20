@@ -22,3 +22,4 @@ demo/source
 bower_components
 
 yarn.lock
+/.vs

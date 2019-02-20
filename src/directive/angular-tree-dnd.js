@@ -31,6 +31,7 @@ function fnInitTreeDnD($timeout, $http, $compile, $parse, $window, $document, $t
 
         $scope.treeData   = [];
         $scope.tree_nodes = [];
+        $scope.tree_on_select = undefined;
 
         $scope.$class = angular.copy($TreeDnDClass);
         angular.extend(
@@ -746,6 +747,18 @@ function fnInitTreeDnD($timeout, $http, $compile, $parse, $window, $document, $t
             $scope.treeData = tmpTreeData;
             reload_data();
             timeReloadData = undefined;
+        }
+
+        if ($attrs.onSelect) {
+            $scope.$watch(
+                $attrs.onSelect, function (val) {
+                    if (angular.equals(val, $scope.tree_on_select)) {
+                        return; // jmp out
+                    }
+                    $scope.tree_on_select = val;
+                    $scope.tree.on_select = val;
+                }, true
+            );
         }
 
         $scope.updateLimit = function updateLimit() {
