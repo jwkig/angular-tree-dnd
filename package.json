@@ -5,11 +5,11 @@
   "homepage": "http://thienhung1989.github.io/angular-tree-dnd/",
   "repository": {
     "type": "git",
-    "url": "git://github.com/thienhung1989/angular-tree-dnd.git"
+    "url": "git://github.com/jwkig/angular-tree-dnd.git"
   },
   "autoupdate": {
     "source": "git",
-    "target": "git://github.com/thienhung1989/angular-tree-dnd.git",
+    "target": "git://github.com/jwkig/angular-tree-dnd.git",
     "basePath": "dist/",
     "files": [
       "ng-tree-dnd.js",
@@ -21,7 +21,7 @@
   },
   "main": "dist/ng-tree-dnd.min.js",
   "dependencies": {
-    "angular": ">=1.2.1"
+    "angular": "^1.7.9"
   },
   "devDependencies": {
     "connect-livereload": ">=0.5.2",

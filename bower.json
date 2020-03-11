@@ -4,7 +4,7 @@
   "authors": [
     "Nguyễn Thiện Hùng"
   ],
-  "homepage": "https://github.com/thienhung1989/angular-tree-dnd",
+  "homepage": "https://github.com/jwkig/angular-tree-dnd",
   "description": "Display tree table (or list) & event DrapnDrop (allow drag multi tree-dnd include all type: table, ol, ul) by AngularJS",
   "main": [
     "dist/ng-tree-dnd.css",
@@ -22,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/thienhung1989/angular-tree-dnd"
+    "url": "git://github.com/jwkig/angular-tree-dnd"
   },
   "ignore": [
     "temp",
