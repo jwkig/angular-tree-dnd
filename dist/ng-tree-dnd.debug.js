@@ -25,7 +25,7 @@
  * Implementing TreeDnD & Event DrapnDrop (allow drag multi tree-table include all type: table, ol, ul)
  * Demo: http://thienhung1989.github.io/angular-tree-dnd
  * Github: https://github.com/jwkig/angular-tree-dnd
- * @version 3.0.10
+ * @version 3.0.11
  * @preserve
  * (c) 2015 Nguyuễn Thiện Hùng - <nguyenthienhung1989@gmail.com>
  */

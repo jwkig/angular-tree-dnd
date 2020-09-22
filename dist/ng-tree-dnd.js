@@ -25,7 +25,7 @@
  * Implementing TreeDnD & Event DrapnDrop (allow drag multi tree-table include all type: table, ol, ul)
  * Demo: http://thienhung1989.github.io/angular-tree-dnd
  * Github: https://github.com/jwkig/angular-tree-dnd
- * @version 3.0.10
+ * @version 3.0.11
  * @preserve
  * (c) 2015 Nguyuễn Thiện Hùng - <nguyenthienhung1989@gmail.com>
  */
@@ -119,7 +119,22 @@ angular.module('ntt.TreeDnD')
         }]
     );
 
-angular.module('ntt.TreeDnD')    .directive('treeDndNodeHandle', function () {        return {            restrict:   'A',            scope:      true,            controller: 'treeDndNodeHandleController',            link:       fnLink        };        function fnLink(scope, element/*, attrs, controller*/) {            scope.$type = 'TreeDnDNodeHandle';            if (scope.$class.handle) {                element.addClass(scope.$class.handle);            }        }    });
+angular.module('ntt.TreeDnD')
+    .directive('treeDndNodeHandle', function () {
+        return {
+            restrict:   'A',
+            scope:      true,
+            controller: 'treeDndNodeHandleController',
+            link:       fnLink
+        };
+
+        function fnLink(scope, element/*, attrs, controller*/) {
+            scope.$type = 'TreeDnDNodeHandle';
+            if (scope.$class.handle) {
+                element.addClass(scope.$class.handle);
+            }
+        }
+    });
 
 angular.module('ntt.TreeDnD')
     .directive('treeDndNode', [
@@ -490,9 +505,8 @@ function fnInitTreeDnD($timeout, $http, $compile, $parse, $window, $document, $t
 
                     node[$scope.primary_key] = _key;
                 }
-                // delete(node.__hashKey__);
             },
-            clone:               function (node/*, _this*/) {
+            clone:               function (node) {
                 var _clone = angular.copy(node);
 
                 this.for_all_descendants(_clone, this.changeKey);
@@ -548,16 +562,18 @@ function fnInitTreeDnD($timeout, $http, $compile, $parse, $window, $document, $t
         $scope.getScope = function (node) {
             if (node) {
                 var _hash = node.__hashKey__;
-                //var _hash = typeof node === 'string' ? node : node.__hashKey__;
                 return $scope.$globals[_hash];
             }
 
             return $scope;
         };
+		
+        $scope.enableHorizontalDrag = $attrs.enableHorizontalDrag == true;
+
+        $scope.sharedTreeId = $attrs.sharedTreeId != null ? $attrs.sharedTreeId : 0;
 
         if ($attrs.enableDrag || $attrs.enableDrop) {
             $scope.placeElm    = undefined;
-            //                            $scope.dragBorder = 30;
             $scope.dragEnabled = undefined;
             $scope.dropEnabled = undefined;
             $scope.horizontal  = undefined;
@@ -588,7 +604,7 @@ function fnInitTreeDnD($timeout, $http, $compile, $parse, $window, $document, $t
                                 info.drag.reload_data();
                             }
                         },
-                        dropped:    function (info/*, pass*/) {
+                        dropped: function (info/*, pass*/) {
                             if (!info) {
                                 return; // jmp out
                             }
@@ -600,6 +616,16 @@ function fnInitTreeDnD($timeout, $http, $compile, $parse, $window, $document, $t
                                 _parentRemove = info.parent || info.drag.treeData,
                                 _parentAdd    = _move.parent || info.target.treeData,
                                 isMove        = info.drag.enabledMove;
+
+                            if (info.target.sharedTreeId != info.drag.sharedTreeId) {
+                                return;
+                            }
+
+                            if (!info.target.enableHorizontalDrag || !info.drag.enableHorizontalDrag) {
+                                if (info.drop == null && info.node.__level__ != 1 || (info.drop != null && info.node.__level__ != info.drop.__level__)) {
+                                    return;
+                                }
+                            }
 
                             if (!info.changed && isMove) {
                                 return false;
@@ -873,6 +899,18 @@ function fnInitTreeDnD($timeout, $http, $compile, $parse, $window, $document, $t
                     [['enableDrag', 'enableDrop']],
                     [
                         ['number', 'dragBorder', 30, 'dragBorder', 30]
+                    ]
+                ],
+				[
+                    [['enableHorizontalDrag']],
+                    [
+                        ['boolean', 'enableHorizontalDrag', true]
+                    ]
+                ],
+                [
+                    [['sharedTreeId']],
+                    [
+                        ['number', 'sharedTreeId', 0]
                     ]
                 ],
                 [
@@ -1276,6 +1314,11 @@ function fnInitTreeDnD($timeout, $http, $compile, $parse, $window, $document, $t
             $scope.tree_nodes = data;
 
             return data;
+        }
+
+        function setExpandingProperty(data) {
+            $scope.expandingProperty = data;
+            reload_data();
         }
 
         function reload_data(oData) {
@@ -2328,10 +2371,6 @@ angular.module('ntt.TreeDnD')
                     return; // jmp out
                 }
 
-                // if (eventScope.$type !== 'TreeDnDNode') { // Check if it is a node or a handle
-                //     return; // jmp out
-                // }
-
                 if (eventScope.$type !== 'TreeDnDNodeHandle') { // If the node has a handle, then it should be clicked by the handle
                     return; // jmp out
                 }
@@ -2625,7 +2664,7 @@ angular.module('ntt.TreeDnD')
                         _drop      = _info.drop,
                         treeScope  = _info.target,
                         fnSwapTree,
-                        isHolder   = _fnPlaceHolder(e, $params);
+                        isHolder = _fnPlaceHolder(e, $params);
 
                     if (!isHolder) {
                         /* when using elementFromPoint() inside an iframe, you have to call
@@ -2766,7 +2805,7 @@ angular.module('ntt.TreeDnD')
                             }
                         } else {
                             // move horizontal
-                            if ($params.pos.dirAx && $params.pos.distAxX >= treeScope.dragBorder) {
+                            if ($params.pos.dirAx && $params.pos.distAxX >= treeScope.dragBorder && treeScope.enableHorizontalDrag) {
                                 $params.pos.distAxX = 0;
                                 // increase horizontal level if previous sibling exists and is not collapsed
                                 if ($params.pos.distX > 0) {
@@ -2836,6 +2875,7 @@ angular.module('ntt.TreeDnD')
                     }
 
                     if (treeScope.$callbacks.accept(_info, _move, isChanged)) {
+
                         _info.move    = _move;
                         _info.drop    = _drop;
                         _info.changed = isChanged;
@@ -3260,7 +3300,9 @@ angular.module('ntt.TreeDnD')
                         tree.for_all_ancestors(node, fnSetCollapse);
                     }
                 },
-
+                setExpandingProperty: function (data) {
+                    scope.setExpandingProperty(data);
+                },
                 reload_data:                       function () {
                     return scope.reload_data();
                 },
@@ -3557,15 +3599,15 @@ angular.module('template/TreeDnD/TreeDnD.html', []).run(
             '       <tr>' +
             '           <th ng-class="expandingProperty.titleClass" ng-style="expandingProperty.titleStyle">' +
             '               {{expandingProperty.displayName || expandingProperty.field || expandingProperty}}' +
-            '           <\/th>' +
+            '           </th>' +
             '           <th ng-repeat="col in colDefinitions" ng-class="col.titleClass" ng-style="col.titleStyle">' +
             '               {{col.displayName || col.field}}' +
             '           </th>' +
             '       </tr>' +
             '   </thead>' +
             '   <tbody tree-dnd-nodes>' +
-            '       <tr tree-dnd-node="node" ng-repeat="node in tree_nodes track by node.__hashKey__" ' +
-            '           ng-if="(node.__inited__ || node.__visible__)"' +
+            '       <tr tree-dnd-node="node" ng-repeat="node in tree_nodes track by node.__uid__"' +
+            '           ng-if="((node.__inited__ || node.__visible__) && !node.toDelete)"' +
             '           ng-click="onSelect(node)" ' +
             '           ng-class="(node.__selected__ ? \' active\':\'\')">' +
             '           <td tree-dnd-node-handle' +
